@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	stalkerlauncher "github.com/kola24511/stalker-launcher"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,21 +16,18 @@ func main() {
 		Usage: "Серверная часть лаунчера",
 		Commands: []*cli.Command{
 			{
-				Name:    "add",
+				Name:    "serve",
 				Aliases: []string{"a"},
-				Usage:   "Добавить задачу в список",
-				Action: func(cCtx *cli.Context) error {
-					if cCtx.Args().Len() == 0 {
-						return fmt.Errorf("вы должны указать задачу")
-					}
-					fmt.Println("Добавлена задача: ", cCtx.Args().First())
+				Usage:   "Запустить сервер",
+				Action: func(*cli.Context) error {
+					stalkerlauncher.Server()
 					return nil
 				},
 			},
 			{
-				Name:    "complete",
+				Name:    "update",
 				Aliases: []string{"c"},
-				Usage:   "Завершить задачу в списке",
+				Usage:   "Обновить клиентскую часть",
 				Action: func(cCtx *cli.Context) error {
 					if cCtx.Args().Len() == 0 {
 						return fmt.Errorf("вы должны указать задачу для завершения")
