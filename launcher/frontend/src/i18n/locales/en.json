@@ -1,0 +1,19 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "ru": "Русский"
+  },
+  "homepage": {
+    "button-game": "Start game",
+    "button-check-update": "Check for updates",
+    "button-force-update": "Force update"
+  },
+  "aboutpage": {
+    "title": "Developed"
+  }
+}

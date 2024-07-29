@@ -1,0 +1,19 @@
+{
+    "nav": {
+      "home": "Главная",
+      "about": "О нас"
+    },
+    "languages": {
+      "en": "English",
+      "fr": "Français",
+      "ru": "Русский"
+    },
+    "homepage": {
+      "button-game": "Запустить игру",
+      "button-check-update": "Проверить обновление",
+      "button-force-update": "Принудительное обновление"
+    },
+    "aboutpage": {
+      "title": "Разработал"
+    }
+  }
