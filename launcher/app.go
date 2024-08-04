@@ -52,6 +52,13 @@ func (a *App) StartGame() {
 	}
 }
 
+func (a *App) getUpdate() {
+
+}
+
+func (a *App) clientUpdate() {
+
+}
 func (a *App) handleError(err error, action string) {
 	logFile, logErr := os.OpenFile("launcher-error.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if logErr != nil {
