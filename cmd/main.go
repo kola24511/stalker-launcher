@@ -29,10 +29,7 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "Обновить клиентскую часть",
 				Action: func(cCtx *cli.Context) error {
-					if cCtx.Args().Len() == 0 {
-						return fmt.Errorf("вы должны указать задачу для завершения")
-					}
-					fmt.Println("Завершена задача: ", cCtx.Args().First())
+					stalkerlauncher.UpdateClient()
 					return nil
 				},
 			},
