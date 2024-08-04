@@ -2,7 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 )
@@ -52,8 +56,30 @@ func (a *App) StartGame() {
 	}
 }
 
-func (a *App) getUpdate() {
+type ClientHash struct {
+	Message string `json:"hash"`
+}
 
+func (a *App) CheckUpdate() {
+	resp, err := http.Get("http://localhost:8080")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	var body []byte
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var clientHash ClientHash
+	err = json.Unmarshal(body, &clientHash)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(clientHash.Message)
 }
 
 func (a *App) clientUpdate() {
