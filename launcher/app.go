@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 )
 
 // App struct
@@ -151,24 +152,35 @@ func updateClient(serverURL, clientDir string) error {
 		return err
 	}
 
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, 10) // Ограничение на 10 одновременных загрузок
+
 	for _, serverFile := range serverHashes {
-		localPath := filepath.Join(clientDir, serverFile.Path)
-		localHash, err := calculateFileHash(localPath)
+		wg.Add(1)
 
-		if err != nil && !os.IsNotExist(err) {
-			// Логируйте ошибку только если файл существует и произошла другая ошибка
-			logger.HandleError(err, "Calculating local file hash")
-			return err
-		}
+		go func(serverFile FileHash) {
+			defer wg.Done()
 
-		if err != nil || localHash != serverFile.Hash {
-			err := downloadFile(serverURL+"/file?path="+serverFile.Path, localPath)
-			if err != nil {
-				logger.HandleError(err, "Downloading file from server")
-				return err
+			localPath := filepath.Join(clientDir, serverFile.Path)
+			localHash, err := calculateFileHash(localPath)
+
+			if err != nil && !os.IsNotExist(err) {
+				// Логируем ошибку только если файл существует и произошла другая ошибка
+				logger.HandleError(err, "Calculating local file hash")
+				return
 			}
-		}
+
+			if err != nil || localHash != serverFile.Hash {
+				semaphore <- struct{}{} // Блокирует, если канал заполнен
+				err := downloadFile(serverURL+"/file?path="+serverFile.Path, localPath)
+				if err != nil {
+					logger.HandleError(err, "Downloading file from server")
+				}
+				<-semaphore // Освобождает место в канале
+			}
+		}(serverFile)
 	}
 
+	wg.Wait() // Ждем завершения всех горутин
 	return nil
 }
