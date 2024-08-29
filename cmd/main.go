@@ -29,7 +29,7 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "Обновить клиентскую часть",
 				Action: func(cCtx *cli.Context) error {
-					stalkerlauncher.UpdateClient()
+					stalkerlauncher.Server()
 					return nil
 				},
 			},

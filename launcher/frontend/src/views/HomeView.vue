@@ -2,15 +2,16 @@
 import { useI18n } from "vue-i18n";
 import { ref } from "vue";
 import {StartGame} from "../../wailsjs/go/main/App"
+import {UpdateClient} from "../../wailsjs/go/main/App"
 
 import option from "@/assets/svg/option.svg";
 
 const { t } = useI18n();
 const isMenuOpen = ref(false);
-
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
+
 
 </script>
 
@@ -28,7 +29,7 @@ const toggleMenu = () => {
         </button>
         <div v-show="isMenuOpen" class="bg-[#aab15e] rounded absolute right-0 bottom-14">
           <div class="flex flex-col text-white p-1.5">
-            <button class="border-b py-1 text-left">
+            <button @click="UpdateClient" class="border-b py-1 text-left">
               {{ t("homepage.button-check-update") }}
             </button>
             <button class="text-left">

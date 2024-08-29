@@ -19,6 +19,10 @@ var assets embed.FS
 //go:embed build/appicon.png
 var icon []byte
 
+func (a *App) UpdateClient() error {
+	return updateClient("http://localhost:8080/", "./client")
+}
+
 func main() {
 	// Create an instance of the app structure
 	// 创建一个App结构体实例
@@ -90,4 +94,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }

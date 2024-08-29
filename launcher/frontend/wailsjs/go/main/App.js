@@ -5,3 +5,7 @@
 export function StartGame() {
   return window['go']['main']['App']['StartGame']();
 }
+
+export function UpdateClient() {
+  return window['go']['main']['App']['UpdateClient']();
+}

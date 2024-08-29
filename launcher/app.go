@@ -2,9 +2,17 @@ package main
 
 import (
 	"context"
-	"log"
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io"
+	"launcher/internal/logger"
+	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"sync"
 )
 
 // App struct
@@ -47,23 +55,132 @@ func (a *App) StartGame() {
 	cmd := exec.Command("bin\\xrEngine.exe")
 	err := cmd.Run()
 	if err != nil {
-		a.handleError(err, "запуске игры")
+		logger.HandleError(err, "SomeAction")
 		return
 	}
 }
 
-func (a *App) handleError(err error, action string) {
-	logFile, logErr := os.OpenFile("launcher-error.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if logErr != nil {
-		log.Fatal(logErr)
-		return
-	}
-	defer func() {
-		if closeErr := logFile.Close(); closeErr != nil {
-			log.Fatal(closeErr)
-		}
-	}()
+type FileHash struct {
+	Path string `json:"path"`
+	Hash string `json:"hash"`
+}
 
-	errorLogger := log.New(logFile, "ERROR: ", log.LstdFlags)
-	errorLogger.Printf("Ошибка при %s: %v\n", action, err)
+// calculateFileHash возвращает MD5-хэш содержимого файла
+func calculateFileHash(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		logger.HandleError(err, "Opening file for hashing")
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		logger.HandleError(err, "Calculating file hash")
+		return "", err
+	}
+
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+// getFileHashes получает список и хэши файлов с сервера
+func getFileHashes(url string) ([]FileHash, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		logger.HandleError(err, "Getting file hashes from server")
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var fileHashes []FileHash
+	if err := json.NewDecoder(resp.Body).Decode(&fileHashes); err != nil {
+		logger.HandleError(err, "Decoding JSON response for file hashes")
+		return nil, err
+	}
+
+	return fileHashes, nil
+}
+
+// ensureDir проверяет существует ли директория и создает её, если не существует
+func ensureDir(dirName string) error {
+	err := os.MkdirAll(dirName, os.ModePerm)
+	if err != nil {
+		logger.HandleError(err, "Creating directory")
+	}
+	return err
+}
+
+// downloadFile загружает файл по указанному URL и сохраняет его в указанное место
+func downloadFile(url, dest string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		logger.HandleError(err, "Downloading file")
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Проверяем статус ответа
+	if resp.StatusCode != http.StatusOK {
+		logger.HandleError(fmt.Errorf("failed to download: %s", resp.Status), "Download failed")
+		return fmt.Errorf("failed to download: %s", resp.Status)
+	}
+
+	// Создадим директорию, если она не существует
+	if err := ensureDir(filepath.Dir(dest)); err != nil {
+		return err
+	}
+
+	out, err := os.Create(dest)
+	if err != nil {
+		logger.HandleError(err, "Creating file for download")
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		logger.HandleError(err, "Copying downloaded data to file")
+	}
+	return err
+}
+
+// updateClient обновляет клиентские файлы до актуальной версии с сервера
+func updateClient(serverURL, clientDir string) error {
+	serverHashes, err := getFileHashes(serverURL + "/file-hashes")
+	if err != nil {
+		logger.HandleError(err, "Getting file hashes from server")
+		return err
+	}
+
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, 10) // Ограничение на 10 одновременных загрузок
+
+	for _, serverFile := range serverHashes {
+		wg.Add(1)
+
+		go func(serverFile FileHash) {
+			defer wg.Done()
+
+			localPath := filepath.Join(clientDir, serverFile.Path)
+			localHash, err := calculateFileHash(localPath)
+
+			if err != nil && !os.IsNotExist(err) {
+				// Логируем ошибку только если файл существует и произошла другая ошибка
+				logger.HandleError(err, "Calculating local file hash")
+				return
+			}
+
+			if err != nil || localHash != serverFile.Hash {
+				semaphore <- struct{}{} // Блокирует, если канал заполнен
+				err := downloadFile(serverURL+"/file?path="+serverFile.Path, localPath)
+				if err != nil {
+					logger.HandleError(err, "Downloading file from server")
+				}
+				<-semaphore // Освобождает место в канале
+			}
+		}(serverFile)
+	}
+
+	wg.Wait() // Ждем завершения всех горутин
+	return nil
 }
