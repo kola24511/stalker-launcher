@@ -40,7 +40,7 @@ const toggleMenu = () => {
       </div>
     </div>
     <div class="w-9/12 grid justify-items-end">
-      <iframe src="https://discord.com/widget?id=919405124626026528&theme=dark" width="350" height="537" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+      <iframe src="https://discord.com/widget?id=959159181053661244&theme=dark" width="350" height="537" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
     </div>
   </div>
 </template>
