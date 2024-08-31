@@ -17,7 +17,7 @@ const toggleMenu = () => {
 
 <template>
   <div class="flex flex-row h-full">
-    <div class="w-3/12 relative bg-stone-800">
+    <div class="w-3/12 relative bg-gray-700 bg-opacity-5 backdrop-blur-sm border-r border-gray-700/50">
       <div class="flex flex-row justify-around absolute inset-x-0 bottom-0 space-x-1 text-center">
         <button class="w-10/12 bg-[#aab15e] p-2.5" @click="StartGame">
           <div class="font-semibold text-xl text-white">
@@ -39,7 +39,7 @@ const toggleMenu = () => {
         </div>
       </div>
     </div>
-    <div class="w-9/12 bg-gray-700 grid justify-items-end">
+    <div class="w-9/12 grid justify-items-end">
       <iframe src="https://discord.com/widget?id=919405124626026528&theme=dark" width="350" height="537" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
     </div>
   </div>
