@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	_ "github.com/joho/godotenv/autoload"
+
 	"github.com/kola24511/stalker-launcher/internal/utils/hash"
 	"github.com/kola24511/stalker-launcher/internal/utils/logger"
 )
@@ -58,8 +60,13 @@ func Server() {
 	fs := http.FileServer(http.Dir("client"))
 	http.Handle("/files/", http.StripPrefix("/files", fs))
 
-	fmt.Println("Сервер запущен на http://localhost:8080")
-	err := http.ListenAndServe("localhost:8080", nil)
+	srv_addr := os.Getenv("SERVER_ADDRESS")
+	srv_port := os.Getenv("SERVER_PORT")
+
+	fmt.Println("Сервер запущен на " + srv_addr + ":" + srv_port)
+	err := http.ListenAndServe(
+		srv_addr+":"+srv_port,
+		nil)
 	if err != nil {
 		logger.HandleError(err, "Error starting server")
 		return
