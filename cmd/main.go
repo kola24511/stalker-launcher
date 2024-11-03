@@ -24,15 +24,17 @@ func main() {
 					return nil
 				},
 			},
-			{
-				Name:    "update",
-				Aliases: []string{"c"},
-				Usage:   "Обновить клиентскую часть",
-				Action: func(cCtx *cli.Context) error {
-					stalkerlauncher.Server()
-					return nil
+			/*
+				{
+					Name:    "update",
+					Aliases: []string{"c"},
+					Usage:   "Обновить клиентскую часть",
+					Action: func(cCtx *cli.Context) error {
+						stalkerlauncher.Server()
+						return nil
+					},
 				},
-			},
+			*/
 			{
 				Name:    "help",
 				Aliases: []string{"h"},
