@@ -56,7 +56,7 @@ func main() {
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("Введите команду: ")
+		fmt.Print("$: ")
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 
